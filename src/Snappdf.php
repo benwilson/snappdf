@@ -13,6 +13,8 @@ class Snappdf
 
     private $chromiumArguments = [];
 
+    private $tempDir;
+
     private $timezone;
 
     private $url;
@@ -170,6 +172,18 @@ class Snappdf
         return $this;
     }
 
+    public function getTempDir(): ?string
+    {
+        return $this->url;
+    }
+
+    public function setTempDir(string $tempDir): self
+    {
+        $this->tempDir = $tempDir;
+
+        return $this;
+    }
+
     public function getTimezone(): ?string
     {
         return $this->url;
@@ -232,8 +246,7 @@ class Snappdf
         }
 
         if ($this->getHtml()) {
-            // TODO: implement a property for temp dir location
-            $temporaryFile = tempnam('/print', 'pdf_');
+            $temporaryFile = tempnam($this->tempDir ?? sys_get_temp_dir(), 'pdf_');
             rename($temporaryFile, $temporaryFile .= '.html');
             if (!touch($temporaryFile)) {
                 throw new \Exception('Unable to create temporary file: '.$temporaryFile);
@@ -250,7 +263,7 @@ class Snappdf
             throw new MissingContent('No content provided. Make sure you call setHtml() or setUrl() before generate().');
         }
 
-        $pdf = tempnam(sys_get_temp_dir(), 'pdf_');
+        $pdf = tempnam($this->tempDir ?? sys_get_temp_dir(), 'pdf_');
         rename($pdf, $pdf .= '.pdf');
 
         $commandInput = [$this->getChromiumPath()];
