@@ -232,9 +232,15 @@ class Snappdf
         }
 
         if ($this->getHtml()) {
-            $temporaryFile = tempnam(sys_get_temp_dir(), 'html_');
+            // TODO: implement a property for temp dir location
+            $temporaryFile = tempnam('/print', 'pdf_');
             rename($temporaryFile, $temporaryFile .= '.html');
-            file_put_contents($temporaryFile, $this->getHtml());
+            if (!touch($temporaryFile)) {
+                throw new \Exception('Unable to create temporary file: '.$temporaryFile);
+            }
+            if (file_put_contents($temporaryFile, $this->getHtml()) === false) {
+                throw new \Exception('Unable to write temporary file: '.$temporaryFile);
+            }
 
             $content['type'] = 'html';
             $content['content'] = $temporaryFile;
