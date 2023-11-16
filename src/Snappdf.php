@@ -13,6 +13,8 @@ class Snappdf
 
     private $chromiumArguments = [];
 
+    private $timezone;
+
     private $url;
 
     private $html;
@@ -168,6 +170,18 @@ class Snappdf
         return $this;
     }
 
+    public function getTimezone(): ?string
+    {
+        return $this->url;
+    }
+
+    public function setTimezone(string $timezone): self
+    {
+        $this->timezone = $timezone;
+
+        return $this;
+    }
+
     public function waitBeforePrinting(int $waitBeforePrinting): self
     {
         $this->waitBeforePrinting = $waitBeforePrinting;
@@ -263,6 +277,10 @@ class Snappdf
     private function executeOnWindows(array $commands, $pdf, array $content): ?string
     {
         $command = implode(' ', $commands) . ' 2>&1'; // must add 2>&1 to redirect stderr to stdout // see https://stackoverflow.com/a/16665146/7511165
+
+        if ($this->timezone) {
+            $command = 'export TZ="'.$this->timezone.'"; '.$command;
+        }
 
         exec($command, $output, $statusCode);
 
