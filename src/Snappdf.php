@@ -6,8 +6,6 @@ use Beganovich\Snappdf\Command\DownloadChromiumCommand;
 use Beganovich\Snappdf\Exception\BinaryNotExecutable;
 use Beganovich\Snappdf\Exception\BinaryNotFound;
 use Beganovich\Snappdf\Exception\MissingContent;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Process\Process;
 
 class Snappdf
 {
@@ -247,34 +245,19 @@ class Snappdf
             $content['content'],
         );
 
-        $platform = (new DownloadChromiumCommand())->generatePlatformCode();
-
-        if ($platform == 'Win' || $platform == 'Win_x64') {
-            return $this->executeOnWindows($commandInput, $pdf, $content);
-        }
-
-        $process = new Process($commandInput);
-
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new \Symfony\Component\Process\Exception\ProcessFailedException($process);
-        }
-
-        $pdfContent = file_get_contents($pdf);
-
-        $this->cleanup($pdf, $content);
-
-        return $pdfContent;
+        return $this->executeOnWindows($commandInput, $pdf, $content);
     }
 
     public function save(string $path): void
     {
         $pdf = $this->generate();
 
-        $filesystem = new Filesystem();
-
-        $filesystem->appendToFile($path, $pdf);
+        if (!touch($path)) {
+            throw new \Exception('Unable to create file: '.$path);
+        }
+        if (file_put_contents($path, $pdf) === false) {
+            throw new \Exception('Unable to write file: '.$path);
+        }
     }
 
     private function executeOnWindows(array $commands, $pdf, array $content): ?string
