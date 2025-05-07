@@ -47,6 +47,10 @@ class Snappdf
             '--hide-scrollbars',
             '--ignore-certificate-errors',
         ];
+
+        $tmp = sys_get_temp_dir();
+        putenv("XDG_CONFIG_HOME=$tmp/.chromium");
+        putenv("XDG_CACHE_HOME=$tmp/.chromium");
     }
 
     public function getUrl(): ?string
